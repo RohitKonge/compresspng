@@ -8,7 +8,7 @@
   }
   
   body {
-    @apply antialiased text-gray-800;
+    @apply antialiased text-blue-800;
   }
 }
 
@@ -66,4 +66,23 @@ input[type="range"]::-ms-thumb {
 input[type="range"]::-ms-thumb:hover {
   @apply bg-primary-600;
   box-shadow: 0 0 0 6px rgba(14, 165, 233, 0.2);
+}
+
+/* Custom Scrolling Styles */
+.cursor-grab {
+  cursor: grab;
+}
+
+.cursor-grabbing {
+  cursor: grabbing;
+}
+
+.scroll-smooth {
+  scroll-behavior: smooth;
+}
+
+/* Prevent text selection while dragging */
+.select-none * {
+  user-select: none;
+  -webkit-user-select: none;
 }

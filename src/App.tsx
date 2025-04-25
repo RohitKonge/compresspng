@@ -1,8 +1,8 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import imageCompression from 'browser-image-compression';
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
-import { Upload, Download, Package, Image as ImageIcon, X, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, Download, Package, Image as ImageIcon, X, AlertCircle, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface CompressedImage {
   original: File;
@@ -19,6 +19,10 @@ function App() {
   const [isDragging, setIsDragging] = useState(false);
   const [isCompressing, setIsCompressing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -120,6 +124,73 @@ function App() {
     setImages(prevImages => prevImages.filter((_, index) => index !== indexToRemove));
   };
 
+  useEffect(() => {
+    const checkScroll = () => {
+      if (scrollContainerRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+        setCanScrollLeft(scrollLeft > 0);
+        setCanScrollRight(scrollLeft < scrollWidth - clientWidth);
+      }
+    };
+
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScroll);
+      // Initial check
+      checkScroll();
+
+      // Check after images load
+      const images = container.getElementsByTagName('img');
+      Array.from(images).forEach(img => {
+        img.addEventListener('load', checkScroll);
+      });
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', checkScroll);
+        const images = container.getElementsByTagName('img');
+        Array.from(images).forEach(img => {
+          img.removeEventListener('load', checkScroll);
+        });
+      }
+    };
+  }, [images.length]);
+
+  const scrollTo = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const scrollAmount = 366; // card width (350) + gap (16)
+      const targetScroll = direction === 'left' 
+        ? container.scrollLeft - scrollAmount
+        : container.scrollLeft + scrollAmount;
+
+      container.scrollTo({
+        left: targetScroll,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollContainerRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
+    setScrollLeft(scrollContainerRef.current.scrollLeft);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollContainerRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollContainerRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-primary-50 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -210,21 +281,35 @@ function App() {
           </div>
         )}
 
-        <div className="relative mb-16">
+        <div className="relative mb-16 group">
+          {canScrollLeft && (
+            <button
+              onClick={() => scrollTo('left')}
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-secondary-600 hover:text-secondary-900 transition-all opacity-0 group-hover:opacity-100 group-hover:translate-x-0 z-10"
+              aria-label="Scroll left"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+          )}
+
           <div
             ref={scrollContainerRef}
-            className="flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory scrollbar-hide"
+            className="flex overflow-x-auto gap-6 pb-4 cursor-grab active:cursor-grabbing select-none"
             style={{
               scrollBehavior: 'smooth',
-              WebkitOverflowScrolling: 'touch',
-              scrollSnapType: 'x mandatory'
+              WebkitOverflowScrolling: 'touch'
             }}
             role="list"
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
           >
             {images.map((image, index) => (
               <article
                 key={index}
-                className="flex-none w-[350px] snap-start bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+                className="flex-none w-[350px] bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+                style={{ userSelect: 'none' }}
               >
                 <div className="relative aspect-video bg-gray-100">
                   <img
@@ -271,27 +356,27 @@ function App() {
               </article>
             ))}
           </div>
-          
-          {images.length > 0 && (
-            <div className="mt-4">
-              <input
-                type="range"
-                min="0"
-                max={Math.max(0, (images.length - 1) * 366)} // 350px card width + 16px gap
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                onChange={(e) => {
-                  if (scrollContainerRef.current) {
-                    scrollContainerRef.current.scrollLeft = parseInt(e.target.value);
-                  }
-                }}
-                onInput={(e) => {
-                  if (scrollContainerRef.current) {
-                    scrollContainerRef.current.scrollLeft = parseInt((e.target as HTMLInputElement).value);
-                  }
-                }}
-              />
-            </div>
+
+          {canScrollRight && (
+            <button
+              onClick={() => scrollTo('right')}
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-secondary-600 hover:text-secondary-900 transition-all opacity-0 group-hover:opacity-100 group-hover:translate-x-0 z-10"
+              aria-label="Scroll right"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
           )}
+
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-100 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-primary-500 transition-all duration-300"
+              style={{
+                width: scrollContainerRef.current 
+                  ? `${(scrollContainerRef.current.scrollLeft / (scrollContainerRef.current.scrollWidth - scrollContainerRef.current.clientWidth)) * 100}%`
+                  : '0%'
+              }}
+            />
+          </div>
         </div>
 
         <section className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm p-8 mb-16">
