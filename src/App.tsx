@@ -366,17 +366,6 @@ function App() {
               <ChevronRight className="w-6 h-6" />
             </button>
           )}
-
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-100 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-primary-500 transition-all duration-300"
-              style={{
-                width: scrollContainerRef.current 
-                  ? `${(scrollContainerRef.current.scrollLeft / (scrollContainerRef.current.scrollWidth - scrollContainerRef.current.clientWidth)) * 100}%`
-                  : '0%'
-              }}
-            />
-          </div>
         </div>
 
         <section className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm p-8 mb-16">
