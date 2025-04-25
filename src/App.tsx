@@ -210,60 +210,88 @@ function App() {
           </div>
         )}
 
-        <div
-          ref={scrollContainerRef}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16"
-          role="list"
-        >
-          {images.map((image, index) => (
-            <article
-              key={index}
-              className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden"
-            >
-              <div className="relative aspect-video bg-gray-100">
-                <img
-                  src={image.preview}
-                  alt={`Preview of ${image.name}`}
-                  className="w-full h-full object-contain"
-                />
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeImage(index);
-                  }}
-                  className="absolute top-2 right-2 p-2 bg-white/90 hover:bg-white rounded-full shadow-sm hover:shadow-md transition-all"
-                  aria-label={`Remove ${image.name}`}
-                >
-                  <X className="w-4 h-4 text-secondary-600 hover:text-secondary-900" />
-                </button>
-              </div>
-              <div className="p-4">
-                <h3 className="font-medium text-secondary-900 truncate mb-3">{image.name}</h3>
-                <dl className="grid grid-cols-2 gap-2 text-sm mb-4">
-                  <div className="bg-secondary-50 p-2 rounded">
-                    <dt className="text-secondary-500">Original</dt>
-                    <dd className="font-medium text-secondary-700">{formatSize(image.originalSize)}</dd>
-                  </div>
-                  <div className="bg-primary-50 p-2 rounded">
-                    <dt className="text-primary-600">Compressed</dt>
-                    <dd className="font-medium text-primary-700">{formatSize(image.compressedSize)}</dd>
-                  </div>
-                </dl>
-                <div className="flex items-center justify-between">
-                  <span className="text-green-600 text-sm font-medium">
-                    {((1 - image.compressedSize / image.originalSize) * 100).toFixed(1)}% saved
-                  </span>
+        <div className="relative mb-16">
+          <div
+            ref={scrollContainerRef}
+            className="flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory scrollbar-hide"
+            style={{
+              scrollBehavior: 'smooth',
+              WebkitOverflowScrolling: 'touch',
+              scrollSnapType: 'x mandatory'
+            }}
+            role="list"
+          >
+            {images.map((image, index) => (
+              <article
+                key={index}
+                className="flex-none w-[350px] snap-start bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+              >
+                <div className="relative aspect-video bg-gray-100">
+                  <img
+                    src={image.preview}
+                    alt={`Preview of ${image.name}`}
+                    className="w-full h-full object-contain"
+                  />
                   <button
-                    onClick={() => handleDownloadSingle(image)}
-                    className="flex items-center px-4 py-2 bg-secondary-100 text-secondary-700 rounded-lg hover:bg-secondary-200 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeImage(index);
+                    }}
+                    className="absolute top-2 right-2 p-2 bg-white/90 hover:bg-white rounded-full shadow-sm hover:shadow-md transition-all"
+                    aria-label={`Remove ${image.name}`}
                   >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download
+                    <X className="w-4 h-4 text-secondary-600 hover:text-secondary-900" />
                   </button>
                 </div>
-              </div>
-            </article>
-          ))}
+                <div className="p-4">
+                  <h3 className="font-medium text-secondary-900 truncate mb-3">{image.name}</h3>
+                  <dl className="grid grid-cols-2 gap-2 text-sm mb-4">
+                    <div className="bg-secondary-50 p-2 rounded">
+                      <dt className="text-secondary-500">Original</dt>
+                      <dd className="font-medium text-secondary-700">{formatSize(image.originalSize)}</dd>
+                    </div>
+                    <div className="bg-primary-50 p-2 rounded">
+                      <dt className="text-primary-600">Compressed</dt>
+                      <dd className="font-medium text-primary-700">{formatSize(image.compressedSize)}</dd>
+                    </div>
+                  </dl>
+                  <div className="flex items-center justify-between">
+                    <span className="text-green-600 text-sm font-medium">
+                      {((1 - image.compressedSize / image.originalSize) * 100).toFixed(1)}% saved
+                    </span>
+                    <button
+                      onClick={() => handleDownloadSingle(image)}
+                      className="flex items-center px-4 py-2 bg-secondary-100 text-secondary-700 rounded-lg hover:bg-secondary-200 transition-colors"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+          
+          {images.length > 0 && (
+            <div className="mt-4">
+              <input
+                type="range"
+                min="0"
+                max={Math.max(0, (images.length - 1) * 366)} // 350px card width + 16px gap
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                onChange={(e) => {
+                  if (scrollContainerRef.current) {
+                    scrollContainerRef.current.scrollLeft = parseInt(e.target.value);
+                  }
+                }}
+                onInput={(e) => {
+                  if (scrollContainerRef.current) {
+                    scrollContainerRef.current.scrollLeft = parseInt((e.target as HTMLInputElement).value);
+                  }
+                }}
+              />
+            </div>
+          )}
         </div>
 
         <section className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm p-8 mb-16">
