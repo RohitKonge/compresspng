@@ -411,7 +411,7 @@ function App() {
         </section>
 
         <footer className="text-center text-secondary-500 border-t border-secondary-200 pt-8">
-          <p className="mb-4">Trusted by thousands of users worldwide for fast, secure image compression.</p>
+          <p className="mb-4">Trusted by 100 million+ users worldwide for fast, secure image compression.</p>
           <p className="text-sm">© 2004-{new Date().getFullYear()} PNG Compressor. All rights reserved.</p>
         </footer>
       </div>
