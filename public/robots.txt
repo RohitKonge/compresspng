@@ -1,5 +1,23 @@
 User-agent: *
 Allow: /
-Sitemap: https://compresspng.live/sitemap.xml
+Disallow: /api/
+Disallow: /private/
 
-# Allow all search engines to crawl all content
+# Maximum crawl rate for optimal indexing
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://compresspng.xyz/sitemap.xml
+
+# Important pages for crawling
+Allow: /index.html
+Allow: /sitemap.xml
+Allow: /robots.txt
+
+# Allow all major search engines
+User-agent: Googlebot
+Allow: /
+User-agent: Bingbot
+Allow: /
+User-agent: DuckDuckBot
+Allow: /
