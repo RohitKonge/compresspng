@@ -1,23 +1,50 @@
+# Global rules
 User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /private/
+Disallow: /admin/
+Disallow: /temp/
 
-# Maximum crawl rate for optimal indexing
-Crawl-delay: 1
+# Prevent caching of dynamic pages
+Disallow: /*?*
 
-# Sitemap location
-Sitemap: https://compresspng.xyz/sitemap.xml
-
-# Important pages for crawling
+# Allow important pages
 Allow: /index.html
+Allow: /about
+Allow: /faq
+Allow: /contact
+Allow: /privacy
+Allow: /terms
 Allow: /sitemap.xml
 Allow: /robots.txt
+Allow: /manifest.json
 
-# Allow all major search engines
+# Allow image assets
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.svg$
+Allow: /*.webp$
+
+# Crawl-delay settings for different bots
 User-agent: Googlebot
+Crawl-delay: 1
 Allow: /
+
 User-agent: Bingbot
+Crawl-delay: 2
 Allow: /
+
 User-agent: DuckDuckBot
+Crawl-delay: 2
 Allow: /
+
+User-agent: Yandex
+Crawl-delay: 3
+Allow: /
+
+# Sitemap declaration
+Sitemap: https://compresspng.xyz/sitemap.xml
+
+# Host directive to specify preferred domain
+Host: https://compresspng.xyz
